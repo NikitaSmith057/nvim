@@ -3,7 +3,7 @@
 -- ----------------------------------------------------------------
 
 vim.cmd([[
-call plug#begin('~/AppData/Local/nvim/plugged')
+call plug#begin(stdpath('config') . '/plugged')
   Plug 'junegunn/vim-easy-align'
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install' }
   Plug 'junegunn/fzf.vim'
@@ -16,6 +16,7 @@ call plug#begin('~/AppData/Local/nvim/plugged')
   Plug 'nvim-telescope/telescope.nvim'
   Plug 'lewis6991/gitsigns.nvim'
   Plug 'tpope/vim-fugitive'
+  Plug 'nvim-lualine/lualine.nvim'
 call plug#end()
 ]])
 
