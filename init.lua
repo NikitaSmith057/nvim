@@ -5,8 +5,6 @@
 vim.cmd([[
 call plug#begin(stdpath('config') . '/plugged')
   Plug 'junegunn/vim-easy-align'
-  Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install' }
-  Plug 'junegunn/fzf.vim'
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'derekwyatt/vim-fswitch'
   Plug 'nvim-lualine/lualine.nvim'
