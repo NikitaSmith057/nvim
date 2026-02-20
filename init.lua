@@ -262,3 +262,12 @@ require("ibl").setup({
     highlight = { "White" },
   },
 })
+
+-- ----------------------------------------------------------------
+-- Git Signs
+-- ----------------------------------------------------------------
+
+vim.api.nvim_set_hl(0, 'GitSignsChange',  { fg = '#ffff00' })
+vim.api.nvim_set_hl(0, 'GitSignsAdd',     { fg = '#00ff00' })
+vim.api.nvim_set_hl(0, 'GitSignsDelete',  { fg = '#ff0000' })
+
