@@ -163,6 +163,7 @@ vim.keymap.set("n", "<leader>e", ":e ")
 vim.keymap.set("n", "<leader>m", ":silent make! san ")
 vim.keymap.set("n", "<leader>t", ":ta ")
 vim.keymap.set("n", "<leader>c", ":MakeQuickFixStay<CR>")
+vim.keymap.set("n", "\\w", "mzggVG\"+y`z")
 
 -- ----------------------------------------------------------------
 -- gitsigns
