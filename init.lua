@@ -102,7 +102,7 @@ vim.api.nvim_create_autocmd("CmdlineLeave", {
 -- ctags
 -- ----------------------------------------------------------------
 
-vim.api.nvim_create_user_command("GenerateTags", "!ctags -R src", {})
+vim.api.nvim_create_user_command("GenerateTags", "!ctags -f tags --exclude=\"*metagen_base*\" --exclude=\"*metagen_os*\" -R src", {})
 
 -- ----------------------------------------------------------------
 -- Build
@@ -115,13 +115,13 @@ vim.api.nvim_create_user_command("MakeQuickFix", function(opts)
   vim.cmd("botright copen")
 end, { nargs = "*" })
 
-vim.api.nvim_create_user_command("MakeQuickFixStay", function()
+vim.api.nvim_create_user_command("MakeQuickFixStay", function(opts)
   local win = vim.fn.win_getid()
   local pos = vim.fn.getpos(".")
-  vim.cmd("MakeQuickFix asan radlink")
+  vim.cmd("MakeQuickFix " .. opts.args)
   vim.fn.win_gotoid(win)
   vim.fn.setpos(".", pos)
-end, {})
+end, { nargs = "*" })
 
 -- open quickfix at the bottom after build
 vim.api.nvim_create_autocmd("QuickFixCmdPost", {
@@ -142,7 +142,12 @@ vim.keymap.set("v", "<C-c>", '"+y')
 vim.keymap.set("n", "<F1>", ":GenerateTags<CR>")
 vim.keymap.set("n", "<F2>", ":ccl<CR>")
 vim.keymap.set("n", "<F4>", ":e %:p:s,.h$,.X123X,:s,.c$,.h,:s,.X123X$,.c,<CR>")
-vim.keymap.set("n", "<F5>", ":MakeQuickFixStay<CR>")
+vim.keymap.set("n", "<F5>", function()
+  vim.cmd("MakeQuickFixStay no_meta raddbg")
+  if vim.v.shell_error == 0 then
+    vim.cmd("MakeQuickFixStay no_meta asan torture")
+  end
+end)
 vim.keymap.set("n", "<F7>", ":cn<CR>")
 
 -- fswitch: toggle between .c/.cpp and .h
@@ -158,14 +163,16 @@ vim.keymap.set("n", "L", "<nop>")
 -- easy align
 vim.keymap.set("x", "ga", "<Plug>(EasyAlign)")
 vim.keymap.set("n", "ga", "<Plug>(EasyAlign)")
+vim.keymap.set("x", "\\a", ":EasyAlign /\\s\\+\\%(\\*\\s*\\)*\\ze\\h\\w*\\s*\\%((\\|;\\)/r0<CR>")
+vim.keymap.set("x", "\\s", ":EasyAlign /(/r0<CR>")
 
 vim.keymap.set("n", "<A-1>",     ":b#<CR>")
 vim.keymap.set("n", "<leader>b", "<cmd>Telescope buffers<CR>")
 --vim.keymap.set("n", "<leader>b", ":b ")
 vim.keymap.set("n", "<leader>e", ":e ")
-vim.keymap.set("n", "<leader>m", ":silent make! asan ")
-vim.keymap.set("n", "<leader>t", ":ta ")
-vim.keymap.set("n", "<leader>c", ":MakeQuickFixStay<CR>")
+vim.keymap.set("n", "<leader>m", ":silent make! asan no_meta ")
+vim.keymap.set("n", "<leader>t", ":tselect ")
+vim.keymap.set("n", "<leader>c", ":MakeQuickFixStay no_meta raddbg<CR>")
 vim.keymap.set("n", "\\w", "mzggVG\"+y`z")
 
 -- ----------------------------------------------------------------
@@ -292,11 +299,39 @@ vim.api.nvim_set_hl(0, 'GitSignsDelete',  { fg = '#ff0000' })
 
 vim.o.grepprg = "rg --vimgrep --smart-case"
 vim.o.grepformat = "%f:%l:%c:%m"
+
+local function prompt_substitute()
+  local pattern = vim.fn.input("grep: ")
+  if pattern == nil or pattern == "" then
+    return nil
+  end
+
+  local replacement = vim.fn.input("replace: ")
+  if replacement == nil then
+    return nil
+  end
+
+  local escaped_pattern = "\\C" .. vim.fn.escape(pattern, "/\\")
+  local escaped_replacement = vim.fn.escape(replacement, "/\\&")
+  return pattern, escaped_pattern, escaped_replacement
+end
+
 vim.keymap.set("n", "\\g", function()
   local pattern = vim.fn.input("grep: ")
   if pattern == nil or pattern == "" then
     return
   end
-  vim.cmd("silent grep! " .. pattern)
+  vim.cmd("silent grep! " .. vim.fn.shellescape(pattern))
+  vim.cmd("cwindow")
+end)
+
+vim.keymap.set("n", "\\r", function()
+  local pattern, escaped_pattern, escaped_replacement = prompt_substitute()
+  if pattern == nil then
+    return
+  end
+
+  vim.cmd("silent grep! " .. vim.fn.shellescape(pattern))
+  vim.cmd("silent cfdo %s/" .. escaped_pattern .. "/" .. escaped_replacement .. "/g | update")
   vim.cmd("cwindow")
 end)
