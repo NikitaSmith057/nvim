@@ -39,9 +39,6 @@ vim.opt.shortmess:append("s")
 
 vim.opt.wildmode = "list:full"
 
--- clang and cl error parser
-vim.opt.errorformat = "%f(%l): %m"
-
 -- auto-align new-line function arguments
 vim.opt.smartindent = true
 vim.opt.cindent     = true
@@ -108,7 +105,32 @@ vim.api.nvim_create_user_command("GenerateTags", "!ctags -f tags --exclude=\"*me
 -- Build
 -- ----------------------------------------------------------------
 
-vim.opt.makeprg = "cmd /c build.bat"
+if vim.fn.has("win32") == 1 then
+  vim.opt.makeprg = "cmd /c build.bat"
+  vim.opt.errorformat = {
+    "%f(%l\\,%c): fatal error %m",
+    "%f(%l\\,%c): %trror %m",
+    "%f(%l\\,%c): %tarning %m",
+    "%f(%l): fatal error %m",
+    "%f(%l): %trror %m",
+    "%f(%l): %tarning %m",
+    "%f(%l): %m",
+  }
+else
+  vim.opt.makeprg = "./build.sh"
+  vim.opt.errorformat = {
+    "%E%f:%l:%c: fatal error: %m",
+    "%E%f:%l:%c: error: %m",
+    "%W%f:%l:%c: warning: %m",
+    "%I%f:%l:%c: note: %m",
+    "%E%f:%l: fatal error: %m",
+    "%E%f:%l: error: %m",
+    "%W%f:%l: warning: %m",
+    "%I%f:%l: note: %m",
+    "%f:%l:%c: %m",
+    "%f:%l: %m",
+  }
+end
 
 vim.api.nvim_create_user_command("MakeQuickFix", function(opts)
   vim.cmd("silent! make " .. opts.args)
@@ -126,7 +148,7 @@ end, { nargs = "*" })
 -- open quickfix at the bottom after build
 vim.api.nvim_create_autocmd("QuickFixCmdPost", {
   pattern  = "make",
-  command  = "copen",
+  command  = "botright copen",
 })
 vim.api.nvim_create_autocmd("FileType", {
   pattern  = "qf",
@@ -168,7 +190,6 @@ vim.keymap.set("x", "\\s", ":EasyAlign /(/r0<CR>")
 
 vim.keymap.set("n", "<A-1>",     ":b#<CR>")
 vim.keymap.set("n", "<leader>b", "<cmd>Telescope buffers<CR>")
---vim.keymap.set("n", "<leader>b", ":b ")
 vim.keymap.set("n", "<leader>e", ":e ")
 vim.keymap.set("n", "<leader>m", ":silent make! asan no_meta ")
 vim.keymap.set("n", "<leader>t", ":tselect ")
