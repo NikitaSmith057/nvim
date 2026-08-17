@@ -15,6 +15,7 @@ call plug#begin(stdpath('config') . '/plugged')
   Plug 'tpope/vim-fugitive'
   Plug 'nvim-lualine/lualine.nvim'
   Plug 'RRethy/vim-illuminate'
+  Plug 'nvim-tree/nvim-tree.lua'
 call plug#end()
 ]])
 
@@ -106,7 +107,7 @@ vim.api.nvim_create_user_command("GenerateTags", "!ctags -f tags --exclude=\"*me
 -- ----------------------------------------------------------------
 
 if vim.fn.has("win32") == 1 then
-  vim.opt.makeprg = "cmd /c build.bat"
+  vim.opt.makeprg = "cmd /c .\\build.bat"
   vim.opt.errorformat = {
     "%f(%l\\,%c): fatal error %m",
     "%f(%l\\,%c): %trror %m",
@@ -191,7 +192,7 @@ vim.keymap.set("x", "\\s", ":EasyAlign /(/r0<CR>")
 vim.keymap.set("n", "<A-1>",     ":b#<CR>")
 vim.keymap.set("n", "<leader>b", "<cmd>Telescope buffers<CR>")
 vim.keymap.set("n", "<leader>e", ":e ")
-vim.keymap.set("n", "<leader>m", ":silent make! asan no_meta ")
+vim.keymap.set("n", "<leader>m", ":silent make! asan no_meta radlink ")
 vim.keymap.set("n", "<leader>t", ":tselect ")
 vim.keymap.set("n", "<leader>c", ":MakeQuickFixStay no_meta raddbg<CR>")
 vim.keymap.set("n", "\\w", "mzggVG\"+y`z")
@@ -362,3 +363,45 @@ vim.keymap.set("n", "\\r", function()
   vim.cmd("silent cfdo %s/" .. escaped_pattern .. "/" .. escaped_replacement .. "/g | update")
   vim.cmd("cwindow")
 end)
+
+-- ----------------------------------------------------------------
+-- file side bar
+-- ----------------------------------------------------------------
+
+require("nvim-tree").setup({
+  view = {
+    width = 32,
+  },
+
+  renderer = {
+    group_empty = true,
+
+    icons = {
+      show = {
+        file = false,
+        folder = false,
+        folder_arrow = false,
+        git = false,
+        modified = false,
+        diagnostics = false,
+        bookmarks = false,
+      },
+    }
+  },
+
+  update_focused_file = {
+    enable = true,
+    update_root = false,
+  },
+})
+
+vim.keymap.set("n", "<F3>", "<cmd>NvimTreeToggle<CR>", {
+  silent = true,
+  desc = "Toggle file tree",
+})
+
+vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeFindFile<CR>", {
+  silent = true,
+  desc = "Reveal current file",
+})
+
